@@ -38,8 +38,6 @@ Follow these steps to get started with AB-learning:
 
 NOTE: These run scripts are designed to be ran on a supercomputing SLURM system. To run them locally, manually replace $SLURM_ARRAY_TASK_ID variables with a local rank for each process in the total $WORLD_SIZE.
 
-<Citation>
-
 If you use these models, please cite the following paper:
 ```
 @article{naidenov2023,
