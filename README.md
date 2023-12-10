@@ -24,13 +24,15 @@ Follow these steps to get started with AB-learning:
 	wget www.placeholder.url
 	```
 
-3. **Create pre-batches**: To avoid overhead during training, input sentences and output AB-genespaces need to computed ahead of time. See build_prebatch.sh for an example.
+3. **Create pre-batches**: To avoid overhead during training, input sentences and output AB-genespaces need to computed ahead of time. See build_prebatch.sh for an example
    ```bash
+    cd AB-learning
 	./src/0_prebatching/build_prebatch.sh
 	```
 
 2. **Run model**: To generate genome embeddings, run the model and specify how many GPUs are needed. For a dataset of this size, 1 GPU can successfully train the model in a day. An example submission can be seen in train_model.sh.
    ```bash
+    cd AB-learning
 	./src/1_unsupervised_embedding/train_model.sh
 	```
 
