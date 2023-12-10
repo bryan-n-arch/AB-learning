@@ -5,12 +5,6 @@
 #SBATCH --mem=720GB
 #SBATCH --array=0-1
 
-# This was designed for Pete
-cd /scratch/bvnaiden/src/model_genespace_embeddings
-
-source ~/.bashrc
-conda activate pytorch_1_12
-
 # World parameters
 WORLD_SIZE=2
 RANK=$SLURM_ARRAY_TASK_ID
