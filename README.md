@@ -17,12 +17,7 @@ Follow these steps to get started with AB-learning:
    pip install -r requirements.txt
 	```
 
-2. **Acquire genomic data**: This model is designed to work on the genespaces from bacterial genomes. To run this example, you will need the genespace files, NARMS metadata, and NARMS phenotypes.
-	```bash
-	wget www.placeholder.url
-	wget www.placeholder.url
-	wget www.placeholder.url
-	```
+2. **Acquire genomic data**: This model is designed to work on the genespaces from bacterial genomes. To run this example, you will need the genespace files, NARMS metadata, and NARMS phenotypes. These are found at 10.5061/dryad.vx0k6djzn
 
 3. **Create pre-batches**: To avoid overhead during training, input sentences and output AB-genespaces need to computed ahead of time. See build_prebatch.sh for an example
    ```bash
