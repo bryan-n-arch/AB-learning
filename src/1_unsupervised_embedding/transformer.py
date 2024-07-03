@@ -1,46 +1,7 @@
 import torch
 import torch.nn as nn
 
-class ReverseLayerF(torch.autograd.Function):
-
-	@staticmethod
-	def forward(ctx, x, alpha):
-		ctx.alpha = alpha
-
-		return x.view_as(x)
-
-	@staticmethod
-	def backward(ctx, grad_output):
-		output = grad_output.neg() * ctx.alpha
-
-		return output, None
-
 class Attention(nn.Module):
-	"""Attention mechanism.
-	Parameters
-	----------
-	dim : int
-		The input and out dimension of per token features.
-	n_heads : int
-		Number of attention heads.
-	qkv_bias : bool
-		If True then we include bias to the query, key and value projections.
-	attn_p : float
-		Dropout probability applied to the query, key and value tensors.
-	proj_p : float
-		Dropout probability applied to the output tensor.
-	Attributes
-	----------
-	scale : float
-		Normalizing consant for the dot product.
-	qkv : nn.Linear
-		Linear projection for the query, key and value.
-	proj : nn.Linear
-		Linear mapping that takes in the concatenated output of all attention
-		heads and maps it into a new space.
-	attn_drop, proj_drop : nn.Dropout
-		Dropout layers.
-	"""
 	def __init__(self, dim, n_heads=12, qkv_bias=True, attn_p=0., proj_p=0.):
 		super().__init__()
 		self.n_heads = n_heads
@@ -54,16 +15,6 @@ class Attention(nn.Module):
 		self.proj_drop = nn.Dropout(proj_p)
 
 	def forward(self, x, mask):
-		"""Run forward pass.
-		Parameters
-		----------
-		x : torch.Tensor
-			Shape `(n_samples, n_patches + 1, dim)`.
-		Returns
-		-------
-		torch.Tensor
-			Shape `(n_samples, n_patches + 1, dim)`.
-		"""
 		n_samples, n_tokens, dim = x.shape
 
 		if dim != self.dim:
@@ -101,28 +52,6 @@ class Attention(nn.Module):
 		return x
 
 class MLP(nn.Module):
-	"""Multilayer perceptron.
-	Parameters
-	----------
-	in_features : int
-		Number of input features.
-	hidden_features : int
-		Number of nodes in the hidden layer.
-	out_features : int
-		Number of output features.
-	p : float
-		Dropout probability.
-	Attributes
-	----------
-	fc : nn.Linear
-		The First linear layer.
-	act : nn.GELU
-		GELU activation function.
-	fc2 : nn.Linear
-		The second linear layer.
-	drop : nn.Dropout
-		Dropout layer.
-	"""
 	def __init__(self, in_features, hidden_features, out_features, p=0.):
 		super().__init__()
 		self.fc1 = nn.Linear(in_features, hidden_features)
@@ -131,16 +60,6 @@ class MLP(nn.Module):
 		self.drop = nn.Dropout(p)
 
 	def forward(self, x):
-		"""Run forward pass.
-		Parameters
-		----------
-		x : torch.Tensor
-			Shape `(n_samples, n_patches + 1, in_features)`.
-		Returns
-		-------
-		torch.Tensor
-			Shape `(n_samples, n_patches +1, out_features)`
-		"""
 		x = self.fc1(
 				x
 		) # (n_samples, n_patches + 1, hidden_features)
@@ -152,29 +71,6 @@ class MLP(nn.Module):
 		return x
 
 class AttentionBlock(nn.Module):
-	"""Transformer block.
-	Parameters
-	----------
-	dim : int
-		Embeddinig dimension.
-	n_heads : int
-		Number of attention heads.
-	mlp_ratio : float
-		Determines the hidden dimension size of the `MLP` module with respect
-		to `dim`.
-	qkv_bias : bool
-		If True then we include bias to the query, key and value projections.
-	p, attn_p : float
-		Dropout probability.
-	Attributes
-	----------
-	norm1, norm2 : LayerNorm
-		Layer normalization.
-	attn : Attention
-		Attention module.
-	mlp : MLP
-		MLP module.
-	"""
 	def __init__(self, dim, n_heads, mlp_ratio=4.0, qkv_bias=True, p=0., attn_p=0.):
 		super().__init__()
 		self.norm1 = nn.LayerNorm(dim, eps=1e-6)
@@ -194,16 +90,6 @@ class AttentionBlock(nn.Module):
 		)
 
 	def forward(self, x, mask):
-		"""Run forward pass.
-		Parameters
-		----------
-		x : torch.Tensor
-			Shape `(n_samples, n_patches + 1, dim)`.
-		Returns
-		-------
-		torch.Tensor
-			Shape `(n_samples, n_patches + 1, dim)`.
-		"""
 		x = x + self.attn(self.norm1(x), mask)
 		x = x + self.mlp(self.norm2(x))
 
@@ -232,7 +118,6 @@ class Transformer(nn.Module):
 			]
 		)
 
-		# self.norm = nn.LayerNorm(embed_dim, eps=1e-6)
 
 	def forward(self, x, mask):
 
@@ -298,49 +183,3 @@ class AB_Transformer(nn.Module):
 		cls_output			= self.cls_head(cls_token_final)
 
 		return cls_output;
-
-class QAB_Transformer(nn.Module):
-	def __init__(
-		self,
-		num_tokens,
-		num_embeddings_outputs=1000,
-		input_pad_idx=-1,
-		qab_pad_idx=-1,
-		embed_dim=128,
-		depth=12, 			n_heads=12, mlp_ratio=4.0,
-		qkv_bias=True, 		p=0.0, 		attn_p=0.0,
-	):
-		super().__init__()
-
-		self.transformer			= Transformer(embed_dim=embed_dim, depth=depth, n_heads=n_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, p=p, attn_p=attn_p);
-
-		self.input_pad_idx			= input_pad_idx;
-
-		self.input_embeddings		= torch.nn.Embedding( num_tokens + 1, 	embedding_dim=embed_dim, padding_idx=input_pad_idx );
-		self.qab_embeddings			= torch.nn.Embedding( 4, 				embedding_dim=embed_dim, padding_idx=qab_pad_idx );
-
-		self.norm					= nn.LayerNorm(embed_dim, eps=1e-6)
-		self.cls_embeddings_outputs	= nn.Linear(embed_dim, num_embeddings_outputs);
-
-	def forward(self, inputs_idxs, qab_idxs):
-
-		# Compute attention mask
-		mask 				= (inputs_idxs != self.input_pad_idx).unsqueeze(1).repeat(1, inputs_idxs.size(1), 1).unsqueeze(1)
-
-		# a.) Extract the embeddings based on the input indices
-		# b.) Extract the QAB embeddings
-		input_tokens		= self.input_embeddings(inputs_idxs);
-		qab_tokens			= self.qab_embeddings(qab_idxs);
-
-		input_tokens 		= input_tokens + qab_tokens;
-
-		# Feed embeddings through the transformer
-		x 					= self.transformer(input_tokens, mask);
-
-		# Normalize the final embedding outputs
-		x 					= self.norm(x)
-
-		# Predict from each embedding
-		cls_embed_output	= self.cls_embeddings_outputs(x);
-
-		return cls_embed_output;
