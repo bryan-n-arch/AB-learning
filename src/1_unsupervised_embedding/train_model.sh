@@ -32,7 +32,3 @@ python -m torch.distributed.launch --master_port 123453 --nproc_per_node=2 --nno
 --log_file_name "../viz/ab_tmp.html" \
 --embeddings_file_name "../data/embeddings/ab_tmp.dir.zarr" \
 --model_file_name "../models/ab_tmp.pt"
-
-# --prebatch_input_file "../tmp/ab_salmonella_enterica_2017.dir.zarr" \
-# --prebatch_input_file "../data/pre_batching/ab_salmonella_enterica_2017.dir.zarr" \
-# --included_species "campylobacter_coli;campylobacter_jejuni;escherichia_coli;salmonella_enterica_2017;salmonella_enterica_2022;shigella_boydii;shigella_dysenteriae;shigella_flexneri;shigella_sonnei;shigella_unknown;vibrio_alginolyticus;vibrio_cincinnatiensis;vibrio_fluvialis;vibrio_furnissii;vibrio_mimicus;vibrio_navarrensis;vibrio_other;vibrio_parahaemolyticus;vibrio_vulnificus" \
